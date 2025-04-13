@@ -1,5 +1,6 @@
 import scrapy
-import pickle
+from bs4 import BeautifulSoup
+from ..items import JobOffer
 
 class PracujSpider(scrapy.Spider):
     name = "pracuj"
@@ -7,5 +8,13 @@ class PracujSpider(scrapy.Spider):
     start_urls = ["https://it.pracuj.pl/praca?et=17&itth=37"]
 
     def parse(self, response):
-        with open('resp.pkcl', 'wb') as file:
-            pickle.dump(response.text, file)
+        soup = BeautifulSoup(response.text, "html.parser")
+        jobs = soup.find("div", attrs={"data-test": "section-offers"})
+        count = 0
+        for i in jobs.children:
+            count +=1
+            title = i.find("h2", attrs={"data-test": "offer-title"}).text
+            company = i.find("h3", attrs={"data-test": "text-company-name"}).text
+            location = i.find("h4", attrs={"data-test": "text-region"}).text
+            yield JobOffer(title=title, company=company, location=location)
+        print(f"Yielded {count} Job Offers")
