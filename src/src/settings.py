@@ -64,9 +64,10 @@ COOKIES_ENABLED = False
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "src.pipelines.SrcPipeline": 300,
-#}
+ITEM_PIPELINES = {
+    "src.pipelines.SrcPipeline": 300,
+    "src.pipelines.SendMail": 700,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

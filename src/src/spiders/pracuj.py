@@ -17,4 +17,3 @@ class PracujSpider(scrapy.Spider):
             company = i.find("h3", attrs={"data-test": "text-company-name"}).text
             location = i.find("h4", attrs={"data-test": "text-region"}).text
             yield JobOffer(title=title, company=company, location=location)
-        print(f"Yielded {count} Job Offers")
