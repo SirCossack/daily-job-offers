@@ -11,6 +11,8 @@ import sqlite3
 connection = sqlite3.connect("items.db")
 cur = connection.cursor()
 
+new_offers = []
+
 db_ready = bool(cur.execute("SELECT name FROM sqlite_master WHERE name='JobOffers'").fetchone())
 if not db_ready:
     cur.execute("CREATE TABLE JobOffers(title, company, location)")
@@ -31,5 +33,5 @@ class SendMail:
         if not item:
             return
         else:
-            print(f"Item to send: {item}")
+            new_offers.append(item)
             return item

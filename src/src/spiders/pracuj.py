@@ -1,11 +1,16 @@
 import scrapy
 from bs4 import BeautifulSoup
-from ..items import JobOffer
+if __name__ == "spiders.pracuj":
+    from src.src.items import JobOffer
+else:
+    from ..items import JobOffer
+
 
 class PracujSpider(scrapy.Spider):
     name = "pracuj"
     allowed_domains = ["it.pracuj.pl", "pracuj.pl"]
     start_urls = ["https://it.pracuj.pl/praca?et=17&itth=37"]
+
 
     def parse(self, response):
         soup = BeautifulSoup(response.text, "html.parser")
