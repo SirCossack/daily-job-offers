@@ -1,3 +1,5 @@
+import datetime
+
 import scrapy
 from bs4 import BeautifulSoup
 if __name__ == "spiders.pracuj":
@@ -21,4 +23,6 @@ class PracujSpider(scrapy.Spider):
             title = i.find("h2", attrs={"data-test": "offer-title"}).text
             company = i.find("h3", attrs={"data-test": "text-company-name"}).text
             location = i.find("h4", attrs={"data-test": "text-region"}).text
-            yield JobOffer(title=title, company=company, location=location)
+            #link = i.find_all("a", attrs={"data-test": "link-offer"})[0]['href']
+            #yield JobOffer(title=title, company=company, location=location, date=datetime.datetime.now(), link=link)
+            yield JobOffer(title=title, company=company, location=location, date=datetime.datetime.now())

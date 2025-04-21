@@ -1,3 +1,4 @@
 skrapervenv
 .idea/**
 **pycache**
+**.db
