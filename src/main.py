@@ -3,6 +3,7 @@ Run the spider, get new job offers and send an email every 24h
 """
 import sched
 import datetime
+import os
 from time import sleep
 from src.pipelines import new_offers, adapt_datetime, convert_datetime
 import smtplib
@@ -14,6 +15,14 @@ from src.spiders.pracuj import PracujSpider
 sqlite3.register_converter('datetime', convert_datetime)
 sqlite3.register_adapter(datetime.datetime, adapt_datetime)
 
+SMTP_SERVER = "smtp.gmail.com"
+SENDER = os.getenv('senderemail')
+RECEIVER = os.getenv('receiveremail')
+PASSWORD = os.getenv("emailerpassword")
+
+
+
+
 def my_sleep(time: datetime.timedelta) -> None:
     """ delayfunc for sched.scheduler that accepts datetime"""
     if time.total_seconds() <= 0:
@@ -21,16 +30,14 @@ def my_sleep(time: datetime.timedelta) -> None:
     else:
         sleep(int(time.total_seconds()))
 
-def send_mail(offers:list) -> None:
-    print("-"*50)
-    counter = 0
-    for i in offers:
-        print("job offers to be sent: ", i)
-        counter +=1
-    print(f"overall {counter} offers")
-    print("-" * 50)
-    return None
+def send_mail(TO, MSG) -> None:
+    with smtplib.SMTP(SMTP_SERVER) as smtp:
+        smtp.starttls()
+        smtp.login(SENDER, PASSWORD)
+        smtp.sendmail(SENDER, TO, MSG)
 
+def construct_mail(offers:list):
+    pass
 
 
 if __name__ == "__main__":
@@ -38,11 +45,11 @@ if __name__ == "__main__":
     cur = con.cursor()
     a = cur.execute("DELETE FROM JobOffers WHERE JULIANDAY(date) - JULIANDAY() > 30") #delete offers that are older than 1 month and have not been updated
     con.commit()
-
     crawler = CrawlerProcess(get_project_settings())
     crawler.crawl(PracujSpider)
     crawler.start()
-    send_mail(new_offers)
+    send_mail(RECEIVER, "hello")
+
     """  
     while True:
         scheduler = sched.scheduler(datetime.datetime.now, my_sleep)
