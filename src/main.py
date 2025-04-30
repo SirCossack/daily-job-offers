@@ -7,6 +7,7 @@ import os
 from time import sleep
 from src.pipelines import new_offers, adapt_datetime, convert_datetime
 import smtplib
+from email.mime.text import MIMEText
 import sqlite3
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
@@ -21,8 +22,6 @@ RECEIVER = os.getenv('receiveremail')
 PASSWORD = os.getenv("emailerpassword")
 
 
-
-
 def my_sleep(time: datetime.timedelta) -> None:
     """ delayfunc for sched.scheduler that accepts datetime"""
     if time.total_seconds() <= 0:
@@ -30,15 +29,31 @@ def my_sleep(time: datetime.timedelta) -> None:
     else:
         sleep(int(time.total_seconds()))
 
-def send_mail(TO, MSG) -> None:
+def send_mail(MSG) -> None:
     with smtplib.SMTP(SMTP_SERVER) as smtp:
         smtp.starttls()
         smtp.login(SENDER, PASSWORD)
-        smtp.sendmail(SENDER, TO, MSG)
+        smtp.send_message(MSG)
 
-def construct_mail(offers:list):
-    pass
+def construct_mail(SENDER, RECEIVER, offers):
+    offers_string = ""
+    for i in offers:
+        offers_string += (f"      {i['title']} - {i['company']} - {i['location']} \n \n")
 
+    text = f"""
+    Hello!
+
+    These are the offers published on pracuj.pl in the last 24h:
+
+{offers_string}
+
+    Hope they're to your liking. See you tommorow!
+                """
+    msg = MIMEText(text)
+    msg['To'] = RECEIVER
+    msg['From'] = SENDER
+    msg['Subject'] = "Your daily job offers from Pracuj.pl!"
+    return msg
 
 if __name__ == "__main__":
     con = sqlite3.connect("items.db", detect_types=sqlite3.PARSE_DECLTYPES) # doesnt seem to break stuff when db does not exist yet
@@ -48,7 +63,9 @@ if __name__ == "__main__":
     crawler = CrawlerProcess(get_project_settings())
     crawler.crawl(PracujSpider)
     crawler.start()
-    send_mail(RECEIVER, "hello")
+
+    mail= construct_mail(SENDER, RECEIVER, new_offers)
+    send_mail(mail)
 
     """  
     while True:
