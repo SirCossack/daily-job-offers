@@ -9,8 +9,12 @@ from src.pipelines import new_offers, adapt_datetime, convert_datetime
 import smtplib
 from email.mime.text import MIMEText
 import sqlite3
-from scrapy.crawler import CrawlerProcess
+from scrapy.crawler import CrawlerRunner
 from scrapy.utils.project import get_project_settings
+
+from twisted.internet import asyncioreactor
+asyncioreactor.install()
+from twisted.internet import task, reactor
 from src.spiders.pracuj import PracujSpider
 
 sqlite3.register_converter('datetime', convert_datetime)
@@ -56,18 +60,20 @@ def construct_mail(SENDER, RECEIVER, offers):
     return msg
 
 if __name__ == "__main__":
-    con = sqlite3.connect("items.db", detect_types=sqlite3.PARSE_DECLTYPES) # doesnt seem to break stuff when db does not exist yet
-    cur = con.cursor()
-    a = cur.execute("DELETE FROM JobOffers WHERE JULIANDAY(date) - JULIANDAY() > 30") #delete offers that are older than 1 month and have not been updated
-    con.commit()
-    crawler = CrawlerProcess(get_project_settings())
-    crawler.crawl(PracujSpider)
-    crawler.start()
+    crawler = CrawlerRunner(get_project_settings())
 
-    mail= construct_mail(SENDER, RECEIVER, new_offers)
-    send_mail(mail)
+    def aaaa():
+        con = sqlite3.connect("items.db", detect_types=sqlite3.PARSE_DECLTYPES) # doesnt seem to break stuff when db does not exist yet
+        cur = con.cursor()
+        cur.execute("DELETE FROM JobOffers WHERE JULIANDAY(date) - JULIANDAY() > 30") #delete offers that are older than 1 month and have not been updated
+        con.commit()
+        con.close()
 
-    """  
-    while True:
-        scheduler = sched.scheduler(datetime.datetime.now, my_sleep)
-        scheduler.enterabs()"""
+        crawler.crawl(PracujSpider)
+
+        mail= construct_mail(SENDER, RECEIVER, new_offers)
+        send_mail(mail)
+
+    b = task.LoopingCall(aaaa)
+    b.start(120)
+    reactor.run()
