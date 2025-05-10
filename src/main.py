@@ -76,7 +76,6 @@ if __name__ == "__main__":
         send_mail(mail)
 
 
-    # b = task.LoopingCall(aaaa)
-    # b.start(120)
-    # reactor.run()
-    aaaa()
+    b = task.LoopingCall(aaaa)
+    b.start(86400)
+    reactor.run()
