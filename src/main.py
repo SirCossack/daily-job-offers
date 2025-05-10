@@ -38,6 +38,7 @@ def send_mail(MSG) -> None:
         smtp.starttls()
         smtp.login(SENDER, PASSWORD)
         smtp.send_message(MSG)
+        print(f"Email sent at {datetime.datetime.now()}")
 
 def construct_mail(SENDER, RECEIVER, offers):
     offers_string = ""
@@ -71,9 +72,11 @@ if __name__ == "__main__":
 
         crawler.crawl(PracujSpider)
 
-        mail= construct_mail(SENDER, RECEIVER, new_offers)
+        mail = construct_mail(SENDER, RECEIVER, new_offers)
         send_mail(mail)
 
-    b = task.LoopingCall(aaaa)
-    b.start(120)
-    reactor.run()
+
+    # b = task.LoopingCall(aaaa)
+    # b.start(120)
+    # reactor.run()
+    aaaa()
